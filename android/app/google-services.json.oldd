@@ -1,0 +1,99 @@
+{
+  "project_info": {
+    "project_number": "651351206557",
+    "firebase_url": "https://linklly-9525b-default-rtdb.firebaseio.com",
+    "project_id": "linklly-9525b",
+    "storage_bucket": "linklly-9525b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:651351206557:android:7565ff2e20876787e7c274",
+        "android_client_info": {
+          "package_name": "com.vynco.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "651351206557-t4r9vuh7kq09timunl49j7jm9hblas1f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vynco.app",
+            "certificate_hash": "3d53b2aff8471fef610b3c71361961fc34a862ad"
+          }
+        },
+        {
+          "client_id": "651351206557-js9ir0prhqr6qct7u24i8k5hgtpgfps1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDi5Z3g1Mpt1y7KsPLHowmWmWwW73pnn9k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "651351206557-js9ir0prhqr6qct7u24i8k5hgtpgfps1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "651351206557-6pd1as6f1t22q8i0mk3riaa5vbepe0i9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.vynco.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:651351206557:android:e46d57c1eba53e05e7c274",
+        "android_client_info": {
+          "package_name": "com.vynco.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "651351206557-k9sb1rtregr0tmq1uvr2fkla328uvpbj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vynco.app",
+            "certificate_hash": "3d53b2aff8471fef610b3c71361961fc34a862ad"
+          }
+        },
+        {
+          "client_id": "651351206557-js9ir0prhqr6qct7u24i8k5hgtpgfps1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDi5Z3g1Mpt1y7KsPLHowmWmWwW73pnn9k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "651351206557-js9ir0prhqr6qct7u24i8k5hgtpgfps1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "651351206557-6pd1as6f1t22q8i0mk3riaa5vbepe0i9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.vynco.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

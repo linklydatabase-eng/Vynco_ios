@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vynco - Request Account Deletion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #0F1B3D 0%, #1A2B5C 50%, #283B89 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #0175C2;
+            font-size: 36px;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #0175C2;
+            padding-bottom: 15px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+        h2 {
+            color: #0175C2;
+            font-size: 24px;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            padding-top: 20px;
+        }
+        p {
+            color: #555;
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .warning-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .warning-box p {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .steps {
+            background: #e8f4f8;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 4px solid #0175C2;
+        }
+        .steps h3 {
+            color: #0175C2;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .step {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+        }
+        .step::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #0175C2;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .steps {
+            counter-reset: step-counter;
+        }
+        .step strong {
+            color: #0175C2;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .data-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .data-list ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .data-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+            position: relative;
+            padding-left: 30px;
+        }
+        .data-list li:last-child {
+            border-bottom: none;
+        }
+        .data-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .data-list li.delete {
+            color: #dc3545;
+        }
+        .data-list li.delete::before {
+            content: "✗";
+            color: #dc3545;
+        }
+        .contact {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .contact a {
+            color: #0175C2;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .contact a:hover {
+            text-decoration: underline;
+        }
+        .button {
+            display: inline-block;
+            background: #0175C2;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #015a94;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            h1 {
+                font-size: 28px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vynco - Request Account Deletion</h1>
+        <p class="subtitle">Last updated: January 2025</p>
+        
+        <div class="warning-box">
+            <h3>⚠️ Important: This action cannot be undone</h3>
+            <p><strong>Permanently deleting your Vynco account will remove all your data, connections, and content. This action is irreversible.</strong></p>
+            <p>Please read the information below carefully before requesting account deletion.</p>
+        </div>
+
+        <h2>How to Request Account Deletion</h2>
+        <div class="steps">
+            <h3>Steps to Delete Your Vynco Account:</h3>
+            
+            <div class="step">
+                <strong>Step 1: Open the Vynco App</strong>
+                <p>Launch the Vynco app on your mobile device and make sure you are logged into the account you wish to delete.</p>
+            </div>
+            
+            <div class="step">
+                <strong>Step 2: Go to Settings</strong>
+                <p>Navigate to the Settings section, which can be accessed from the bottom navigation bar or your profile menu.</p>
+            </div>
+            
+            <div class="step">
+                <strong>Step 3: Contact Support</strong>
+                <p>Scroll down to the "Support" section and tap on "Contact Support" to send an account deletion request.</p>
+            </div>
+            
+            <div class="step">
+                <strong>Step 4: Send Deletion Request</strong>
+                <p>In your email to support, clearly state: "I would like to permanently delete my Vynco account and all associated data." Include your account email address to help us locate your account.</p>
+            </div>
+            
+            <div class="step">
+                <strong>Step 5: Verify Your Identity</strong>
+                <p>Our support team will respond within 7 business days to verify your identity and confirm the deletion request. This helps protect your account from unauthorized deletion.</p>
+            </div>
+            
+            <div class="step">
+                <strong>Step 6: Account Deletion Processed</strong>
+                <p>Once verified, your account and all associated data will be permanently deleted within 30 days of your request confirmation.</p>
+            </div>
+        </div>
+
+        <div class="steps" style="background: #fff3cd; border-left-color: #ffc107;">
+            <h3 style="color: #856404;">Alternative Method: Email Support Directly</h3>
+            <p style="color: #856404; margin-bottom: 15px;">You can also send your account deletion request directly via email:</p>
+            <p style="color: #856404;">
+                <strong>Email:</strong> <a href="mailto:vynco.help@gmail.com?subject=Account Deletion Request" style="color: #0175C2;">vynco.help@gmail.com</a><br>
+                <strong>Subject:</strong> Account Deletion Request<br>
+                <strong>Required Information:</strong> Your registered email address and confirmation that you want to permanently delete your account.
+            </p>
+        </div>
+
+        <h2>What Data Will Be Deleted</h2>
+        <p>When you request account deletion, the following data associated with your Vynco account will be permanently deleted:</p>
+        
+        <div class="data-list">
+            <ul>
+                <li>Your user account and authentication information</li>
+                <li>Your profile information (name, email, phone number, bio)</li>
+                <li>Your profile photo and digital card image</li>
+                <li>All your connections and connection requests</li>
+                <li>All your posts and status updates</li>
+                <li>All your messages and conversation history</li>
+                <li>All your notifications</li>
+                <li>Your digital card theme preferences</li>
+                <li>All stored files and media (images, documents)</li>
+                <li>Your app settings and preferences</li>
+            </ul>
+        </div>
+
+        <h2>What Data Will Be Kept (If Applicable)</h2>
+        <p>In certain circumstances, we may retain some data for legal, security, or operational purposes:</p>
+        
+        <div class="data-list">
+            <ul>
+                <li class="delete">Aggregated or anonymized data that cannot be used to identify you</li>
+                <li class="delete">Data required to be retained by law (e.g., transaction records, if applicable)</li>
+                <li class="delete">Data necessary for fraud prevention or security purposes</li>
+                <li class="delete">Backup data (which will be deleted in our next scheduled backup cycle, typically within 90 days)</li>
+            </ul>
+        </div>
+
+        <h2>Data Retention Period</h2>
+        <p>After you submit an account deletion request, we will retain your data for a limited period to complete the deletion process and comply with legal and security requirements:</p>
+        <ul style="margin-left: 20px; color: #555;">
+            <li><strong>Immediate (0-7 days):</strong> Your account will be marked for deletion and you will no longer be able to log in.</li>
+            <li><strong>Within 30 days:</strong> We will continue to hold your data only as needed to process the deletion request and for legal or security purposes. After this period, all personal data will be permanently deleted from our active systems and backups.</li>
+        </ul>
+        <p><strong>Note:</strong> If you have any pending transactions, disputes, or legal obligations, we may need to retain certain data for longer than 30 days until those matters are resolved, as required by applicable law.</p>
+
+        <h2>Important Considerations</h2>
+        <div class="warning-box">
+            <h3>Before Deleting Your Account:</h3>
+            <ul style="margin-left: 20px; color: #856404;">
+                <li>Make sure you have saved any important information or connections you want to keep</li>
+                <li>Consider downloading your data before deletion (you can request this via support)</li>
+                <li>Understand that you will lose access to all your connections and messages</li>
+                <li>If you have any pending issues or transactions, resolve them before deletion</li>
+            </ul>
+        </div>
+
+        <h2>Contact Us</h2>
+        <div class="contact">
+            <p><strong>If you have questions about account deletion or need assistance, please contact us:</strong></p>
+            <p><strong>Support Email:</strong> <a href="mailto:vynco.help@gmail.com">vynco.help@gmail.com</a></p>
+            <p><strong>Privacy Email:</strong> <a href="mailto:vynco.help@gmail.com">vynco.help@gmail.com</a></p>
+            <p><strong>Response Time:</strong> We aim to respond to all account deletion requests within 7 business days.</p>
+        </div>
+        
+        <p style="margin-top: 30px; text-align: center;">
+            <strong>Vynco</strong> is committed to protecting your privacy and making account deletion straightforward.<br>
+            We respect your right to control your personal data.
+        </p>
+        
+        <div class="last-updated" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 40px; border-left: 4px solid #0175C2; font-size: 14px; color: #666;">
+            <strong>Last updated:</strong> January 2025
+        </div>
+    </div>
+</body>
+</html>
+

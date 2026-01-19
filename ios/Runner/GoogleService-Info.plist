@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>651351206557-6pd1as6f1t22q8i0mk3riaa5vbepe0i9.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.651351206557-6pd1as6f1t22q8i0mk3riaa5vbepe0i9</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>651351206557-k9sb1rtregr0tmq1uvr2fkla328uvpbj.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyArcjgyMHQltdKobmGwhth3W31soxNOKto</string>
+	<key>GCM_SENDER_ID</key>
+	<string>651351206557</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.vynco.app</string>
+	<key>PROJECT_ID</key>
+	<string>linklly-9525b</string>
+	<key>STORAGE_BUCKET</key>
+	<string>linklly-9525b.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:651351206557:ios:60642554beb84a0ee7c274</string>
+	<key>DATABASE_URL</key>
+	<string>https://linklly-9525b-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
