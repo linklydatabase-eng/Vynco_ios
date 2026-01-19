@@ -1624,10 +1624,34 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
   Future<String?> _getUserProfileImageUrl(String userId) async {
     try {
       final userDoc = await _firestore.collection('users').doc(userId).get();
-      if (userDoc.exists) {
-        final userData = userDoc.data();
-        return userData?['profileImageUrl'] as String?;
+      if (!userDoc.exists) return null;
+
+      final userData = userDoc.data();
+      if (userData == null) return null;
+
+      const possibleKeys = [
+        'profileImageUrl',
+        'profilePic',
+        'photoUrl',
+        'photoURL',
+        'imageUrl',
+        'avatar',
+        'avatarUrl',
+      ];
+
+      for (final key in possibleKeys) {
+        final value = userData[key];
+        if (value is String && value.trim().isNotEmpty) {
+          return value.trim();
+        }
       }
+
+      // Some documents may nest urls under a generic image field
+      final dynamic imageField = userData['image'];
+      if (imageField is String && imageField.trim().isNotEmpty) {
+        return imageField.trim();
+      }
+
       return null;
     } catch (e) {
       debugPrint('Error fetching user profile image: $e');
@@ -2002,7 +2026,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
               ],
             ),
             child: AspectRatio(
-              aspectRatio: isCompactCard ? 2.2 / 1.4 : 3.5 / 2.2,
+              aspectRatio: isCompactCard ? 2.2 / 1.55 : 3.5 / 2.35,
               child: Padding(
                 padding: contentPadding,
                 child: Stack(
@@ -2243,13 +2267,11 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
                         ),
                         SizedBox(height: math.max(2.0, spacingSmall)),
                         Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
                               FutureBuilder<String?> (
                                 future: connection.contactEmail.trim().isNotEmpty
                                     ? Future.value(connection.contactEmail)
@@ -2507,7 +2529,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
                                 color: dividerColor,
                                 margin: EdgeInsets.only(top: spacingSmall),
                               ),
-                              SizedBox(height: spacingSmall),
+                              const Spacer(),
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: Text(
@@ -2523,7 +2545,8 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
                                 ),
                               ),
                               if (connection.groupId != null &&
-                                  connection.groupId!.isNotEmpty)
+                                  connection.groupId!.isNotEmpty) ...[
+                                SizedBox(height: spacingSmall),
                                 FutureBuilder<GroupModel?>(
                                   future: GroupService.getGroup(
                                     connection.groupId!,
@@ -2573,9 +2596,9 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
                                     );
                                   },
                                 ),
+                              ],
                             ],
                           ),
-                        ),
                         ),
                       ],
                     ),
