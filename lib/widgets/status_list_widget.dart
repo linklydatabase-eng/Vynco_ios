@@ -4,7 +4,7 @@ import '../constants/app_colors.dart';
 import '../models/status_model.dart';
 import '../services/auth_service.dart';
 import '../services/status_service.dart';
-import 'status_widget.dart';
+import '../screens/status/status_viewer_screen.dart';
 
 class StatusListWidget extends StatefulWidget {
   const StatusListWidget({super.key});
@@ -108,164 +108,112 @@ class _StatusListWidgetState extends State<StatusListWidget> {
               );
             }
 
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: statuses.length,
-              itemBuilder: (context, index) {
-                final status = statuses[index];
-                return StatusWidget(
-                  status: status,
-                  onTap: () {
-                    // TODO: Navigate to status detail view
-                    _showStatusDetail(context, status);
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showStatusDetail(BuildContext context, StatusModel status) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height * 0.8,
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: AppColors.grey200),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: AppColors.primary,
-                      backgroundImage: status.userProfileImageUrl != null
-                          ? NetworkImage(status.userProfileImageUrl!)
-                          : null,
-                      child: status.userProfileImageUrl == null
-                          ? Text(
-                              status.userName.isNotEmpty 
-                                  ? status.userName[0].toUpperCase() 
-                                  : 'U',
-                              style: const TextStyle(
-                                color: AppColors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            status.userName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.grey900,
+            return SizedBox(
+              height: 120,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                itemCount: statuses.length,
+                itemBuilder: (context, index) {
+                  final status = statuses[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => StatusViewerScreen(
+                              statuses: statuses,
+                              initialIndex: index,
                             ),
                           ),
-                          Text(
-                            _getTimeAgo(status.createdAt),
-                            style: const TextStyle(
-                              color: AppColors.grey600,
-                              fontSize: 12,
+                        );
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          // Story circle
+                          Stack(
+                            children: [
+                              Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: status.isViewed
+                                        ? AppColors.grey300
+                                        : AppColors.primary,
+                                    width: status.isViewed ? 1.5 : 2.5,
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  radius: 39,
+                                  backgroundColor: AppColors.primary,
+                                  backgroundImage: status.userProfileImageUrl != null
+                                      ? NetworkImage(status.userProfileImageUrl!)
+                                      : null,
+                                  child: status.userProfileImageUrl == null
+                                      ? Text(
+                                          status.userName.isNotEmpty
+                                              ? status.userName[0].toUpperCase()
+                                              : 'U',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 24,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                              ),
+                              // Status indicator
+                              if (!status.isViewed)
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    width: 16,
+                                    height: 16,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          SizedBox(
+                            width: 80,
+                            child: Text(
+                              status.userName,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.grey900,
+                                fontWeight: status.isViewed
+                                    ? FontWeight.normal
+                                    : FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
-              
-              // Content
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (status.text != null) ...[
-                        Text(
-                          status.text!,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: AppColors.grey900,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                      if (status.imageUrl != null)
-                        Container(
-                          width: double.infinity,
-                          height: 300,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: AppColors.grey100,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              status.imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: AppColors.grey100,
-                                  child: const Icon(
-                                    Icons.image,
-                                    color: AppColors.grey400,
-                                    size: 64,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
-  }
-
-  String _getTimeAgo(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
-    } else {
-      return '${difference.inDays}d ago';
-    }
   }
 }

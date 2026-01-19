@@ -178,33 +178,169 @@ class _StatusScreenState extends State<StatusScreen> {
                       // Stories bar at the top (Instagram style)
                       _buildStoriesBar(context, uniqueUsers, groupedStatuses, authService.user!.uid),
                       
-                      // Status list below
+                      const Divider(height: 1, color: AppColors.grey200),
+                      
+                      // Stories list below - tap to open full screen viewer
                       Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: allStatuses.length,
-                          itemBuilder: (context, index) {
-                            final status = allStatuses[index];
-                            return TweenAnimationBuilder<double>(
-                              tween: Tween(begin: 0.95, end: 1.0),
-                              duration: const Duration(milliseconds: 220),
-                              curve: Curves.easeOut,
-                              builder: (context, scale, child) {
-                                return AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 220),
-                                  opacity: 1.0,
-                                  child: Transform.scale(
-                                    scale: scale,
-                                    alignment: Alignment.topCenter,
-                                    child: child,
-                                  ),
-                                );
-                              },
-                              child: _buildStatusCard(status),
-                            );
-                          },
-                        ),
+                        child: allStatuses.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.image_not_supported_outlined,
+                                      size: 48,
+                                      color: AppColors.grey400,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No stories yet',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: AppColors.grey600,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.all(8),
+                                itemCount: allStatuses.length,
+                                itemBuilder: (context, index) {
+                                  final status = allStatuses[index];
+                                  // Group statuses by user
+                                  final userStatuses = groupedStatuses[status.userId] ?? [];
+                                  
+                                  return GestureDetector(
+                                    onTap: () {
+                                      _openStoryViewer(context, userStatuses, 0);
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: status.isViewed ? AppColors.grey200 : AppColors.primary,
+                                          width: status.isViewed ? 1 : 2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.05),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            // Header with user info
+                                            Container(
+                                              padding: const EdgeInsets.all(12),
+                                              color: Colors.white,
+                                              child: Row(
+                                                children: [
+                                                  CircleAvatar(
+                                                    radius: 16,
+                                                    backgroundColor: AppColors.primary,
+                                                    backgroundImage: status.userProfileImageUrl != null
+                                                        ? NetworkImage(status.userProfileImageUrl!)
+                                                        : null,
+                                                    child: status.userProfileImageUrl == null
+                                                        ? Text(
+                                                            status.userName.isNotEmpty
+                                                                ? status.userName[0].toUpperCase()
+                                                                : 'U',
+                                                            style: const TextStyle(
+                                                              color: Colors.white,
+                                                              fontWeight: FontWeight.bold,
+                                                              fontSize: 12,
+                                                            ),
+                                                          )
+                                                        : null,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          status.userName,
+                                                          style: const TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 13,
+                                                            color: AppColors.grey900,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          _getTimeAgo(status.createdAt),
+                                                          style: const TextStyle(
+                                                            fontSize: 11,
+                                                            color: AppColors.grey600,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            // Story image/text preview
+                                            if (status.imageUrl != null)
+                                              Container(
+                                                width: double.infinity,
+                                                height: 120,
+                                                color: AppColors.grey100,
+                                                child: Image.network(
+                                                  status.imageUrl!,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return Container(
+                                                      color: AppColors.grey100,
+                                                      child: const Icon(
+                                                        Icons.image,
+                                                        color: AppColors.grey400,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              )
+                                            else if (status.text != null)
+                                              Container(
+                                                width: double.infinity,
+                                                height: 120,
+                                                color: AppColors.grey50,
+                                                padding: const EdgeInsets.all(12),
+                                                child: Text(
+                                                  status.text!,
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color: AppColors.grey900,
+                                                  ),
+                                                  maxLines: 3,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              )
+                                            else
+                                              Container(
+                                                width: double.infinity,
+                                                height: 120,
+                                                color: AppColors.grey100,
+                                                child: const Icon(
+                                                  Icons.layers,
+                                                  color: AppColors.grey400,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                       ),
                     ],
                   );
@@ -475,7 +611,7 @@ class _StatusScreenState extends State<StatusScreen> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  GestureDetector(
+                GestureDetector(
                     onTap: () {
                       if (hasOwnStatuses) {
                         // View own statuses
@@ -646,24 +782,36 @@ class _StatusScreenState extends State<StatusScreen> {
   }
 
   void _openStoryViewer(BuildContext context, List<StatusModel> statuses, int initialIndex) {
-    if (statuses.isEmpty) return;
-    
-    // Mark status as viewed when opening
-    final authService = Provider.of<AuthService>(context, listen: false);
-    if (authService.user?.uid != null) {
-      for (final status in statuses) {
-        _statusService.markStatusAsViewed(status.id, authService.user!.uid);
-      }
+    if (statuses.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No stories available')),
+      );
+      return;
     }
     
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => StatusViewerScreen(
-          statuses: statuses,
-          initialIndex: initialIndex,
+    // Mark statuses as viewed when opening
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      if (authService.user?.uid != null) {
+        for (final status in statuses) {
+          _statusService.markStatusAsViewed(status.id, authService.user!.uid);
+        }
+      }
+    } catch (e) {
+      // Silent fail
+    }
+    
+    // Navigate to full-screen viewer
+    if (context.mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => StatusViewerScreen(
+            statuses: statuses,
+            initialIndex: initialIndex.clamp(0, statuses.length - 1),
+          ),
+          fullscreenDialog: true,
         ),
-        fullscreenDialog: true,
-      ),
-    );
+      );
+    }
   }
 }

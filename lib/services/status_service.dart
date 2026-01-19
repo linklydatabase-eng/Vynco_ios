@@ -5,6 +5,7 @@ import '../models/status_model.dart';
 
 class StatusService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // Use the default bucket from Firebase initialization
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
   // Create a new status
@@ -20,13 +21,21 @@ class StatusService {
       
       // Upload image if provided
       if (imageFile != null) {
-        final ref = _storage
-            .ref()
-            .child('status_images')
-            .child('${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg');
-        
-        final uploadTask = await ref.putFile(imageFile);
-        imageUrl = await uploadTask.ref.getDownloadURL();
+        final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final ref = _storage.ref().child('status_images').child(fileName);
+
+        // Explicit metadata helps Storage route and validate content type correctly
+        final metadata = SettableMetadata(contentType: 'image/jpeg');
+
+        try {
+          final uploadTask = await ref.putFile(imageFile, metadata);
+          imageUrl = await uploadTask.ref.getDownloadURL();
+        } on FirebaseException catch (e) {
+          // Surface clear info for troubleshooting
+          throw Exception(
+            'Upload failed (${e.code}): ${e.message ?? 'no message'}',
+          );
+        }
       }
 
       // Create status document

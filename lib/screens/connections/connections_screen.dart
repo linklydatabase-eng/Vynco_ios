@@ -2034,7 +2034,8 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.max,
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2240,13 +2241,15 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
                             ),
                           ],
                         ),
-                        SizedBox(height: spacingMedium),
+                        SizedBox(height: math.max(2.0, spacingSmall)),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
                               FutureBuilder<String?> (
                                 future: connection.contactEmail.trim().isNotEmpty
                                     ? Future.value(connection.contactEmail)
@@ -2572,6 +2575,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
                                 ),
                             ],
                           ),
+                        ),
                         ),
                       ],
                     ),
