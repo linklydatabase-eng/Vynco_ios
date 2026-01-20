@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +14,7 @@ class NotificationService extends ChangeNotifier {
   String? _fcmToken;
   String? _currentUserId; // Add current user ID tracking
   bool _isLoading = false;
-  List<Map<String, dynamic>> _notifications = [];
+  final List<Map<String, dynamic>> _notifications = [];
   final Set<String> _seenNotificationDocIds = <String>{};
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _userNotifSub;
   bool _skipInitialNotificationBatch = false;

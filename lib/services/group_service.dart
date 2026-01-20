@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math';
 import '../models/group_model.dart';
-import '../models/connection_model.dart';
 import '../models/group_message_model.dart';
 
 class GroupService {

@@ -98,7 +98,7 @@ class PostService extends ChangeNotifier {
 
         List<String> connectionUserIds = connectionsSnapshot.docs
             .map((doc) {
-              final data = doc.data() as Map<String, dynamic>;
+              final data = doc.data();
               final dynamic raw = data['contactUserId'];
               return raw is String && raw.isNotEmpty ? raw : null;
             })
@@ -114,7 +114,7 @@ class PostService extends ChangeNotifier {
         final List<PostModel> fetchedPosts = [];
 
         // Helper to chunk a list
-        List<List<String>> _chunk(List<String> list, int size) {
+        List<List<String>> chunk(List<String> list, int size) {
           final List<List<String>> chunks = [];
           for (int i = 0; i < list.length; i += size) {
             chunks.add(list.sublist(i, i + size > list.length ? list.length : i + size));
@@ -122,7 +122,7 @@ class PostService extends ChangeNotifier {
           return chunks;
         }
 
-        final chunks = _chunk(connectionUserIds, 10);
+        final chunks = chunk(connectionUserIds, 10);
 
         // Run chunk queries in parallel with a generous limit, then distill to latest per user
         final chunkFutures = chunks.map((ids) async {
@@ -362,7 +362,7 @@ class PostService extends ChangeNotifier {
         .asyncMap((connectionsSnapshot) async {
       List<String> connectionUserIds = connectionsSnapshot.docs
           .map((doc) {
-            final data = doc.data() as Map<String, dynamic>;
+            final data = doc.data();
             final dynamic raw = data['contactUserId'];
             return raw is String && raw.isNotEmpty ? raw : null;
           })
@@ -810,7 +810,7 @@ class PostService extends ChangeNotifier {
       final QuerySnapshot snapshot = await _firestore!
           .collection(_collection)
           .where('content', isGreaterThanOrEqualTo: query)
-          .where('content', isLessThan: query + 'z')
+          .where('content', isLessThan: '${query}z')
           .orderBy('content')
           .orderBy('createdAt', descending: true)
           .get();
@@ -920,7 +920,7 @@ class PostService extends ChangeNotifier {
               } else {
                 // Non-transient error or max retries reached
                 debugPrint('PostService: Error saving post to Firestore: $e');
-                throw e; // Re-throw to be caught by outer catch
+                rethrow; // Re-throw to be caught by outer catch
               }
             }
           }

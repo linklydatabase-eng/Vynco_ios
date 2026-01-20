@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/app_colors.dart';
 import '../models/status_model.dart';
 import '../services/auth_service.dart';
@@ -37,7 +39,7 @@ class _StatusStoriesWidgetState extends State<StatusStoriesWidget> {
           stream: _statusService.getStatuses(authService.user!.uid),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container(
+              return SizedBox(
                 height: 100,
                 child: const Center(
                   child: CircularProgressIndicator(),
@@ -46,7 +48,7 @@ class _StatusStoriesWidgetState extends State<StatusStoriesWidget> {
             }
 
             if (snapshot.hasError) {
-              return Container(
+              return SizedBox(
                 height: 100,
                 child: Center(
                   child: Text(
@@ -110,83 +112,96 @@ class _StatusStoriesWidgetState extends State<StatusStoriesWidget> {
     final String displayName = authService.userModel?.fullName ?? 
                                authService.user?.displayName ?? 
                                'User';
-    final String? photoUrl = authService.userModel?.profileImageUrl ?? 
-                            authService.user?.photoURL;
+    final String? initialPhotoUrl = authService.userModel?.profileImageUrl ?? 
+                                    authService.user?.photoURL;
+    final String? uid = authService.user?.uid;
 
-    return Container(
-      width: 90,
-      margin: const EdgeInsets.only(right: 12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          GestureDetector(
-            onTap: () => context.go('/status'),
-            child: Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.grey300,
-                  width: 2,
-                ),
-              ),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  ClipOval(
-                    child: photoUrl != null && photoUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: photoUrl,
-                            fit: BoxFit.cover,
-                            memCacheWidth: 140,
-                            memCacheHeight: 140,
-                            placeholder: (context, url) => _buildDefaultAvatar(displayName),
-                            errorWidget: (context, url, error) => _buildDefaultAvatar(displayName),
-                          )
-                        : _buildDefaultAvatar(displayName),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 22,
-                      height: 22,
+    // Listen to user doc so freshly uploaded profile photos show immediately.
+    if (uid == null) {
+      return const SizedBox.shrink();
+    }
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+      builder: (context, snapshot) {
+        final data = snapshot.data?.data() as Map<String, dynamic>?;
+        final String? photoUrl = data?['profileImageUrl'] as String?
+          ?? initialPhotoUrl
+          ?? FirebaseAuth.instance.currentUser?.photoURL;
+
+        return Container(
+          width: 90,
+          margin: const EdgeInsets.only(right: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: () => context.go('/status'),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 70,
+                      height: 70,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 4,
-                          ),
-                        ],
+                        border: Border.all(
+                          color: AppColors.grey300,
+                          width: 2,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.add,
-                        size: 16,
-                        color: AppColors.primary,
+                      child: ClipOval(
+                        child: photoUrl != null && photoUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: photoUrl,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 140,
+                                memCacheHeight: 140,
+                              )
+                            : _buildDefaultAvatar(displayName, size: 70),
                       ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(height: 3),
+              const Text(
+                'Status',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textSecondary, // Muted Gray for Secondary Text
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-          const SizedBox(height: 3),
-          const Text(
-            'Status',
-            style: TextStyle(
-              fontSize: 11,
-              color: AppColors.textSecondary, // Muted Gray for Secondary Text
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -215,16 +230,14 @@ class _StatusStoriesWidgetState extends State<StatusStoriesWidget> {
                 ),
               ),
               child: ClipOval(
-                child: status.userProfileImageUrl != null
+                child: status.userProfileImageUrl != null && status.userProfileImageUrl!.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: status.userProfileImageUrl!,
                         fit: BoxFit.cover,
-                        memCacheWidth: 100,
-                        memCacheHeight: 100,
-                        placeholder: (context, url) => _buildDefaultAvatar(status.userName),
-                        errorWidget: (context, url, error) => _buildDefaultAvatar(status.userName),
+                        memCacheWidth: 120,
+                        memCacheHeight: 120,
                       )
-                    : _buildDefaultAvatar(status.userName),
+                    : _buildDefaultAvatar(status.userName, size: 60),
               ),
             ),
           ),
@@ -244,10 +257,10 @@ class _StatusStoriesWidgetState extends State<StatusStoriesWidget> {
     );
   }
 
-  Widget _buildDefaultAvatar(String userName) {
+  Widget _buildDefaultAvatar(String userName, {double size = 70}) {
     return Container(
-      width: 70,
-      height: 70,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: AppColors.primary,
         shape: BoxShape.circle,
@@ -255,10 +268,10 @@ class _StatusStoriesWidgetState extends State<StatusStoriesWidget> {
       child: Center(
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 24,
+            fontSize: size * 0.34,
           ),
         ),
       ),

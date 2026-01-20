@@ -14,7 +14,7 @@ class AppTheme {
     onError: AppColors.white,
     surface: AppColors.surfaceDark,
     onSurface: AppColors.textPrimary,
-    surfaceVariant: AppColors.grey800,
+    surfaceContainerHighest: AppColors.grey800,
     onSurfaceVariant: AppColors.textSecondary,
     outline: AppColors.grey600,
     shadow: Colors.black,

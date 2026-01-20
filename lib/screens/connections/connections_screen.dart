@@ -10,7 +10,6 @@ import '../../models/connection_model.dart';
 import '../../models/connection_request_model.dart';
 import '../../models/group_model.dart';
 import '../../models/user_model.dart';
-import '../../models/message_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/connection_request_service.dart';
 import '../../services/group_service.dart';
@@ -351,7 +350,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
               const Text('Choose a group or create a new one:', style: TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: selectedGroupId,
+                initialValue: selectedGroupId,
                 dropdownColor: AppColors.grey800,
                 decoration: const InputDecoration(
                   filled: true,
@@ -2327,7 +2326,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
 
                                   return InkWell(
                                     onTap: hasLinkedIn
-                                        ? () => _launchLinkedIn(linkedInUrl!)
+                                        ? () => _launchLinkedIn(linkedInUrl)
                                         : null,
                                     borderRadius: BorderRadius.circular(4),
                                     child: Row(
@@ -2951,7 +2950,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> with SingleTicker
                           createdAt: DateTime.now(),
                           updatedAt: DateTime.now(),
                           color: '#0466C8',
-                          qrCode: 'vynco://group/${groupId}',
+                          qrCode: 'vynco://group/$groupId',
                           inviteCode: groupId,
                         ));
 

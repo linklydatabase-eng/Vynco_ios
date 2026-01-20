@@ -17,7 +17,7 @@ class DigitalCardScreen extends StatelessWidget {
       ),
       backgroundColor: AppColors.backgroundLight,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Column(
           children: [
             // Card instructions
@@ -45,7 +45,7 @@ class DigitalCardScreen extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                   const Text(
                     'Tap the card to flip and see your QR code. Share your professional identity in style!',
                     style: TextStyle(

@@ -332,7 +332,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Choose Group', style: TextStyle(color: AppColors.textPrimary)),
           content: DropdownButtonFormField<String>(
-            value: selectedGroupId,
+            initialValue: selectedGroupId,
             dropdownColor: AppColors.grey800,
             decoration: const InputDecoration(
               filled: true,
@@ -542,8 +542,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       debugPrint('🔄 Committing bidirectional connections...');
       debugPrint('   - myDocId: $myDocId (userId: ${me.uid} -> contactUserId: $otherUserId)');
       debugPrint('   - theirDocId: $theirDocId (userId: $otherUserId -> contactUserId: ${me.uid})');
-      debugPrint('   - myData: ${myData}');
-      debugPrint('   - theirData: ${theirData}');
+      debugPrint('   - myData: $myData');
+      debugPrint('   - theirData: $theirData');
       
       await batch.commit();
       

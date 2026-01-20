@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 import 'dart:ui';
 import '../../constants/app_colors.dart';
@@ -97,6 +98,27 @@ class _CreateStatusScreenState extends State<CreateStatusScreen> {
       } else if (authService.user != null) {
         userName = authService.user!.displayName ?? 'User';
         userProfileImageUrl = authService.user!.photoURL;
+      }
+
+      // Ensure we have the latest profile image from Firestore
+      if ((userProfileImageUrl == null || userProfileImageUrl.isEmpty) && 
+          authService.user != null) {
+        try {
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(authService.user!.uid)
+              .get();
+          
+          if (userDoc.exists) {
+            final userData = userDoc.data() as Map<String, dynamic>?;
+            final firestoreImageUrl = userData?['profileImageUrl'] as String?;
+            if (firestoreImageUrl != null && firestoreImageUrl.isNotEmpty) {
+              userProfileImageUrl = firestoreImageUrl;
+            }
+          }
+        } catch (e) {
+          debugPrint('Error fetching profile image from Firestore: $e');
+        }
       }
 
       await statusService.createStatus(

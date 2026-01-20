@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import '../../constants/app_colors.dart';
 import '../../models/group_model.dart';
 import '../../models/user_model.dart';
@@ -290,11 +289,52 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 );
               }
 
-              // Check if userModel is available
+              // Check if userModel is available - if not, treat as no groups scenario for new accounts
               if (authService.userModel == null) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.group_outlined,
+                        size: 80,
+                        color: Color(0xFF9CA3AF),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'No groups yet',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Create a new group to get started!',
+                        style: TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 30),
+                      ElevatedButton.icon(
+                        onPressed: () => _showCreateGroupDialog(),
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        label: const Text(
+                          'Create New Group',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }

@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/custom_text_field.dart';
-import '../../widgets/custom_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -27,7 +26,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _agreeToTerms = false;
-  String _accountType = 'Public'; // Default to Public
+  final String _accountType = 'Public'; // Default to Public
   bool _passwordsMatch = true;
   bool _isCheckingEmail = false;
   String? _emailError;

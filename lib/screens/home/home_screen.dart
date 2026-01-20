@@ -2437,7 +2437,7 @@ class _CommentsModalState extends State<CommentsModal> {
                           radius: 16,
                           backgroundColor: AppColors.primary,
                           child: Text(
-                            currentUser?.fullName?.isNotEmpty == true ? currentUser!.fullName[0].toUpperCase() : 'U',
+                            currentUser?.fullName.isNotEmpty == true ? currentUser!.fullName[0].toUpperCase() : 'U',
                             style: TextStyle(
                               color: AppColors.white,
                               fontSize: 12,
@@ -2973,7 +2973,7 @@ class _RetryableNetworkImageState extends State<_RetryableNetworkImage> {
     }
 
       // Helper function to safely convert to int for caching
-      int? _safeToInt(double? value) {
+      int? safeToInt(double? value) {
         if (value == null) return null;
         if (!value.isFinite || value.isNaN || value <= 0) return null;
         try {
@@ -2990,8 +2990,8 @@ class _RetryableNetworkImageState extends State<_RetryableNetworkImage> {
         width: widget.width,
         height: widget.height,
         fit: widget.fit,
-        cacheWidth: _safeToInt(widget.width),
-        cacheHeight: _safeToInt(widget.height),
+        cacheWidth: safeToInt(widget.width),
+        cacheHeight: safeToInt(widget.height),
         filterQuality: FilterQuality.medium,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) {

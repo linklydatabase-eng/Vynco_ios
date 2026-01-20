@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../constants/app_colors.dart';
 import '../../models/group_model.dart';
 import '../../models/group_message_model.dart';
 import '../../models/user_model.dart';
-import '../../services/auth_service.dart';
 import '../../services/group_service.dart';
 
 class GroupChatScreen extends StatefulWidget {

@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import '../models/status_model.dart';
 
@@ -70,36 +72,96 @@ class StatusService {
         .where('userId', isEqualTo: currentUserId)
         .snapshots()
         .asyncMap((connectionsSnapshot) async {
-      if (connectionsSnapshot.docs.isEmpty) {
-        // No connections, return empty list
+      try {
+        if (connectionsSnapshot.docs.isEmpty) {
+          // No connections, return empty list
+          return <StatusModel>[];
+        }
+        
+        // Get connection user IDs
+        List<String> connectionUserIds = connectionsSnapshot.docs
+            .map((doc) {
+              final data = doc.data();
+              final dynamic raw = data['contactUserId'];
+              return raw is String && raw.isNotEmpty ? raw : null;
+            })
+            .whereType<String>()
+            .toList();
+        
+        if (connectionUserIds.isEmpty) {
+          return <StatusModel>[];
+        }
+        
+        // Firestore whereIn has a limit of 10 items, so batch the queries
+        List<StatusModel> allStatuses = [];
+        const int batchSize = 10;
+        
+        for (int i = 0; i < connectionUserIds.length; i += batchSize) {
+          final batch = connectionUserIds.skip(i).take(batchSize).toList();
+          
+          final statusesSnapshot = await _firestore
+              .collection('statuses')
+              .where('userId', whereIn: batch)
+              .orderBy('createdAt', descending: true)
+              .get();
+          
+          final batchStatuses = <StatusModel>[];
+          
+          for (final doc in statusesSnapshot.docs) {
+            StatusModel status = StatusModel.fromMap(doc.data());
+            
+            debugPrint('📱 Status: ${status.userName}, userProfileImageUrl: ${status.userProfileImageUrl}');
+            
+            // If userProfileImageUrl is missing, try to fetch it from the user document
+            if (status.userProfileImageUrl == null || status.userProfileImageUrl!.isEmpty) {
+              try {
+                final userDoc = await _firestore
+                    .collection('users')
+                    .doc(status.userId)
+                    .get();
+                
+                if (userDoc.exists) {
+                  final userData = userDoc.data() as Map<String, dynamic>;
+                  final profileImageUrl = userData['profileImageUrl'] as String?;
+                  
+                  debugPrint('👤 Fetched user ${status.userId}: profileImageUrl = $profileImageUrl');
+                  
+                  if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+                    status = status.copyWith(userProfileImageUrl: profileImageUrl);
+                  }
+                } else {
+                  debugPrint('⚠️ User document not found for ${status.userId}');
+                }
+              } catch (e) {
+                debugPrint('❌ Error fetching user profile: $e');
+              }
+            }
+
+            // Fallback: if this status belongs to the current user and Firestore has no photo,
+            // try the Firebase Auth photoURL so their uploaded avatar still shows.
+            if ((status.userProfileImageUrl == null || status.userProfileImageUrl!.isEmpty) &&
+                status.userId == currentUserId) {
+              final authPhoto = FirebaseAuth.instance.currentUser?.photoURL;
+              if (authPhoto != null && authPhoto.isNotEmpty) {
+                status = status.copyWith(userProfileImageUrl: authPhoto);
+              }
+            }
+            
+            batchStatuses.add(status);
+          }
+          
+          allStatuses.addAll(batchStatuses.where((status) => !status.isExpired));
+        }
+        
+        // Sort all statuses by creation time after combining batches
+        allStatuses.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        
+        return allStatuses;
+      } catch (e) {
+        // Return empty list on error instead of throwing
+        debugPrint('Error loading statuses: $e');
         return <StatusModel>[];
       }
-      
-      // Get connection user IDs
-      List<String> connectionUserIds = connectionsSnapshot.docs
-          .map((doc) {
-            final data = doc.data() as Map<String, dynamic>;
-            final dynamic raw = data['contactUserId'];
-            return raw is String && raw.isNotEmpty ? raw : null;
-          })
-          .whereType<String>()
-          .toList();
-      
-      if (connectionUserIds.isEmpty) {
-        return <StatusModel>[];
-      }
-      
-      // Get statuses from connections only
-      final statusesSnapshot = await _firestore
-          .collection('statuses')
-          .where('userId', whereIn: connectionUserIds)
-          .orderBy('createdAt', descending: true)
-          .get();
-      
-      return statusesSnapshot.docs
-          .map((doc) => StatusModel.fromMap(doc.data()))
-          .where((status) => !status.isExpired) // Filter out expired statuses
-          .toList();
     });
   }
 
@@ -110,10 +172,47 @@ class StatusService {
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => StatusModel.fromMap(doc.data()))
-            .where((status) => !status.isExpired)
-            .toList());
+        .asyncMap((snapshot) async {
+      final statuses = <StatusModel>[];
+      
+      for (final doc in snapshot.docs) {
+        StatusModel status = StatusModel.fromMap(doc.data());
+        
+        // If userProfileImageUrl is missing, try to fetch it from the user document
+        if (status.userProfileImageUrl == null || status.userProfileImageUrl!.isEmpty) {
+          try {
+            final userDoc = await _firestore
+                .collection('users')
+                .doc(status.userId)
+                .get();
+            
+            if (userDoc.exists) {
+              final userData = userDoc.data() as Map<String, dynamic>;
+              final profileImageUrl = userData['profileImageUrl'] as String?;
+              
+              if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+                status = status.copyWith(userProfileImageUrl: profileImageUrl);
+              }
+            }
+          } catch (e) {
+            debugPrint('Error fetching user profile: $e');
+          }
+        }
+
+        // Fallback: for own statuses, try Firebase Auth photoURL if Firestore is missing it.
+        if ((status.userProfileImageUrl == null || status.userProfileImageUrl!.isEmpty) &&
+            status.userId == userId) {
+          final authPhoto = FirebaseAuth.instance.currentUser?.photoURL;
+          if (authPhoto != null && authPhoto.isNotEmpty) {
+            status = status.copyWith(userProfileImageUrl: authPhoto);
+          }
+        }
+        
+        statuses.add(status);
+      }
+      
+      return statuses.where((status) => !status.isExpired).toList();
+    });
   }
 
   // Mark status as viewed

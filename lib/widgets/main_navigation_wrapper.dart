@@ -183,8 +183,8 @@ class ProfileEditWrapper extends StatelessWidget {
     final navIndex = initialIndex ?? 3;
     return MainNavigationWrapper(
       key: ValueKey('profile-edit-$navIndex'),
-      child: const ProfileEditScreen(),
       initialIndex: navIndex,
+      child: const ProfileEditScreen(),
     );
   }
 }
@@ -195,8 +195,8 @@ class SettingsWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MainNavigationWrapper(
-      child: SettingsScreen(),
-      initialIndex: 4, // Settings tab
+      initialIndex: 4,
+      child: SettingsScreen(), // Settings tab
     );
   }
 }

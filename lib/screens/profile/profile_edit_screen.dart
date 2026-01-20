@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 import 'dart:ui';
 import '../../services/auth_service.dart';
@@ -153,7 +154,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       if (authService.userModel != null) {
         final privacy = authService.userModel!.phoneNumberPrivacy ?? 'connections_only';
         final viewers = authService.userModel!.allowedPhoneViewers;
-        final safeViewers = viewers != null ? List<String>.from(viewers) : <String>[];
+        final safeViewers = List<String>.from(viewers);
         
         if (!mounted) return;
         setState(() {
@@ -242,7 +243,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       for (var doc in connectionsSnapshot.docs) {
         try {
           final data = doc.data();
-          if (data == null) continue;
           
           final contactUserId = data['contactUserId']?.toString() ?? '';
           final contactName = data['contactName']?.toString() ?? 'Unknown';
@@ -1097,11 +1097,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           _selectedImage!,
                           fit: BoxFit.cover,
                         )
-                      : _currentImageUrl != null
-                          ? Image.network(
-                              _currentImageUrl!,
+                      : (_currentImageUrl != null && _currentImageUrl!.isNotEmpty)
+                          ? CachedNetworkImage(
+                              imageUrl: _currentImageUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
+                              placeholder: (context, url) => _buildDefaultAvatar(),
+                              errorWidget: (context, url, error) {
+                                debugPrint('Error loading profile image: $error');
+                                debugPrint('Image URL: $_currentImageUrl');
                                 return _buildDefaultAvatar();
                               },
                             )
@@ -1418,8 +1421,8 @@ class _RadioPrivacyTile extends StatelessWidget {
           }
         },
         activeColor: AppColors.primary,
-        fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primary;
           }
           return AppColors.textSecondary;

@@ -1,4 +1,3 @@
-import '../models/user_model.dart';
 
 class PrivacyUtils {
   /// Determines if personal information (email and phone) should be visible

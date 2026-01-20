@@ -4,13 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../constants/app_colors.dart';
 import '../../services/auth_service.dart';
-import '../../services/connection_request_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/user_model.dart';
 import '../chat/chat_screen.dart';
 import '../../services/notification_service.dart';
-import '../../models/connection_request_model.dart';
-import '../../widgets/connection_request_widget.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -20,7 +16,7 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  String _selectedFilter = 'All';
+  final String _selectedFilter = 'All';
 
   @override
   Widget build(BuildContext context) {

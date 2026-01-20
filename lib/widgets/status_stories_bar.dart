@@ -7,7 +7,7 @@ class StatusStoriesBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -17,7 +17,7 @@ class StatusStoriesBar extends StatelessWidget {
             return _AddStatusStory();
           }
           return _FriendStatusStory(
-            name: 'Friend ${index}',
+            name: 'Friend $index',
             imageUrl: 'https://via.placeholder.com/60',
             hasNewStatus: index <= 2,
           );

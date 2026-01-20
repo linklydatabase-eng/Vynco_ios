@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:ui';
 import '../../services/auth_service.dart';
-import '../../services/theme_service.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/digital_card_themes.dart';
 
@@ -1198,8 +1197,8 @@ class _SwitchSettingsTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.value,
-    this.enabled = true,
     required this.onChanged,
+    this.enabled = true,
   });
 
   @override
@@ -1226,7 +1225,7 @@ class _SwitchSettingsTile extends StatelessWidget {
       trailing: Switch(
         value: value,
         onChanged: enabled ? onChanged : null,
-        activeColor: AppColors.primary,
+        activeThumbColor: AppColors.primary,
       ),
     );
   }

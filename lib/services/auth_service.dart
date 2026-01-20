@@ -26,7 +26,7 @@ class AuthService extends ChangeNotifier {
   bool get needsUsernameSetup {
     if (_userModel == null || _user == null) return false;
     final username = _userModel!.username;
-    return username == null || username.isEmpty;
+    return username.isEmpty;
   }
 
   // Getters
@@ -55,7 +55,7 @@ class AuthService extends ChangeNotifier {
         } catch (e) {
           debugPrint('⚠️ Error accessing Firebase services: $e');
           // Check if Firebase apps exist - if they do, Firebase is available
-          if (!Firebase.apps.isEmpty) {
+          if (Firebase.apps.isNotEmpty) {
             debugPrint('✅ Firebase apps exist (${Firebase.apps.length}), retrying service initialization...');
             try {
               _auth = FirebaseAuth.instance;
@@ -89,7 +89,7 @@ class AuthService extends ChangeNotifier {
         debugPrint('❌ AuthService initialization error: $e');
         debugPrint('❌ Stack trace: $stackTrace');
         // If Firebase apps exist, Firebase is actually available
-        if (!Firebase.apps.isEmpty) {
+        if (Firebase.apps.isNotEmpty) {
           debugPrint('⚠️ Exception occurred but Firebase apps exist (${Firebase.apps.length}), marking as available');
           try {
             _auth = FirebaseAuth.instance;
@@ -197,7 +197,7 @@ class AuthService extends ChangeNotifier {
 
   Future<UserCredential?> signInWithEmail(String email, String password) async {
     // Re-check Firebase availability - if apps exist, Firebase is available
-    if (!Firebase.apps.isEmpty && !_isFirebaseAvailable) {
+    if (Firebase.apps.isNotEmpty && !_isFirebaseAvailable) {
       debugPrint('⚠️ Firebase apps exist but flag was false, updating availability...');
       try {
         _auth = FirebaseAuth.instance;
@@ -335,7 +335,7 @@ class AuthService extends ChangeNotifier {
 
   Future<UserCredential?> signUpWithEmail(String email, String password, String fullName, {String? username, String? phoneNumber, String? company, String? accountType}) async {
     // Re-check Firebase availability - if apps exist, Firebase is available
-    if (!Firebase.apps.isEmpty && !_isFirebaseAvailable) {
+    if (Firebase.apps.isNotEmpty && !_isFirebaseAvailable) {
       debugPrint('⚠️ Firebase apps exist but flag was false, updating availability...');
       try {
         _auth = FirebaseAuth.instance;
@@ -420,7 +420,7 @@ class AuthService extends ChangeNotifier {
 
   Future<UserCredential?> signInWithUsernameOrEmail(String usernameOrEmail, String password) async {
     // Re-check Firebase availability - if apps exist, Firebase is available
-    if (!Firebase.apps.isEmpty && !_isFirebaseAvailable) {
+    if (Firebase.apps.isNotEmpty && !_isFirebaseAvailable) {
       debugPrint('⚠️ Firebase apps exist but flag was false, updating availability...');
       try {
         _auth = FirebaseAuth.instance;
@@ -529,17 +529,15 @@ class AuthService extends ChangeNotifier {
 
   Future<UserCredential?> signInWithGoogle() async {
     // Re-check Firebase availability - if apps exist, Firebase is available
-    if (!Firebase.apps.isEmpty && !_isFirebaseAvailable) {
+    if (Firebase.apps.isNotEmpty && !_isFirebaseAvailable) {
       debugPrint('⚠️ Firebase apps exist but flag was false, updating availability...');
       try {
         _auth = FirebaseAuth.instance;
         _firestore = FirebaseFirestore.instance;
-        if (_googleSignIn == null) {
-          _googleSignIn = GoogleSignIn(
+        _googleSignIn ??= GoogleSignIn(
             scopes: ['email', 'profile'],
             serverClientId: '651351206557-js9ir0prhqr6qct7u24i8k5hgtpgfps1.apps.googleusercontent.com',
           );
-        }
         _isFirebaseAvailable = true;
         debugPrint('✅ Firebase availability updated to true');
       } catch (e) {
@@ -737,7 +735,7 @@ class AuthService extends ChangeNotifier {
 
   Future<void> resetPassword(String email) async {
     // Re-check Firebase availability - if apps exist, Firebase is available
-    if (!Firebase.apps.isEmpty && !_isFirebaseAvailable) {
+    if (Firebase.apps.isNotEmpty && !_isFirebaseAvailable) {
       debugPrint('⚠️ Firebase apps exist but flag was false, updating availability...');
       try {
         _auth = FirebaseAuth.instance;

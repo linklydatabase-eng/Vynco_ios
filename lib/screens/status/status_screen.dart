@@ -182,7 +182,7 @@ class _StatusScreenState extends State<StatusScreen> {
                       
                       // Stories list below - tap to open full screen viewer
                       Expanded(
-                        child: allStatuses.isEmpty
+                        child: uniqueUsers.isEmpty
                             ? Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -206,9 +206,9 @@ class _StatusScreenState extends State<StatusScreen> {
                               )
                             : ListView.builder(
                                 padding: const EdgeInsets.all(8),
-                                itemCount: allStatuses.length,
+                                itemCount: uniqueUsers.length,
                                 itemBuilder: (context, index) {
-                                  final status = allStatuses[index];
+                                  final status = uniqueUsers[index];
                                   // Group statuses by user
                                   final userStatuses = groupedStatuses[status.userId] ?? [];
                                   
@@ -643,10 +643,10 @@ class _StatusScreenState extends State<StatusScreen> {
                                 ? CachedNetworkImage(
                                     imageUrl: photoUrl,
                                     fit: BoxFit.cover,
-                                    placeholder: (context, url) => _buildDefaultAvatar(displayName),
-                                    errorWidget: (context, url, error) => _buildDefaultAvatar(displayName),
+                                    memCacheWidth: 140,
+                                    memCacheHeight: 140,
                                   )
-                                : _buildDefaultAvatar(displayName),
+                                : _buildDefaultAvatar(displayName, size: 70),
                           ),
                           if (!hasOwnStatuses)
                             Positioned(
@@ -721,14 +721,14 @@ class _StatusScreenState extends State<StatusScreen> {
                         ),
                       ),
                     child: ClipOval(
-                      child: userStatus.userProfileImageUrl != null
+                      child: userStatus.userProfileImageUrl != null && userStatus.userProfileImageUrl!.isNotEmpty
                           ? CachedNetworkImage(
                               imageUrl: userStatus.userProfileImageUrl!,
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => _buildDefaultAvatar(userStatus.userName),
-                              errorWidget: (context, url, error) => _buildDefaultAvatar(userStatus.userName),
+                              memCacheWidth: 140,
+                              memCacheHeight: 140,
                             )
-                          : _buildDefaultAvatar(userStatus.userName),
+                          : _buildDefaultAvatar(userStatus.userName, size: 70),
                     ),
                   ),
                 ),
@@ -751,8 +751,10 @@ class _StatusScreenState extends State<StatusScreen> {
     );
   }
 
-  Widget _buildDefaultAvatar(String userName) {
+  Widget _buildDefaultAvatar(String userName, {double size = 70}) {
     return Container(
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: AppColors.primary,
         shape: BoxShape.circle,
@@ -760,10 +762,10 @@ class _StatusScreenState extends State<StatusScreen> {
       child: Center(
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 24,
+            fontSize: size * 0.34,
           ),
         ),
       ),
