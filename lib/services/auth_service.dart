@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../constants/digital_card_themes.dart';
@@ -683,6 +684,153 @@ class AuthService extends ChangeNotifier {
     } finally {
       _setLoading(false);
       debugPrint('🔵 Google Sign-In process completed');
+    }
+  }
+
+  Future<UserCredential?> signInWithApple() async {
+    // Re-check Firebase availability - if apps exist, Firebase is available
+    if (Firebase.apps.isNotEmpty && !_isFirebaseAvailable) {
+      debugPrint('⚠️ Firebase apps exist but flag was false, updating availability...');
+      try {
+        _auth = FirebaseAuth.instance;
+        _firestore = FirebaseFirestore.instance;
+        _isFirebaseAvailable = true;
+        debugPrint('✅ Firebase availability updated to true');
+      } catch (e) {
+        debugPrint('❌ Failed to reinitialize Firebase: $e');
+      }
+    }
+    
+    // Double-check Firebase availability before proceeding
+    if (!_isFirebaseAvailable || Firebase.apps.isEmpty) {
+      debugPrint('❌ Firebase not available - apps: ${Firebase.apps.length}, _isFirebaseAvailable: $_isFirebaseAvailable');
+      throw Exception('Firebase is not available. Please restart the app and check your internet connection.');
+    }
+
+    try {
+      _setLoading(true);
+      debugPrint('🔵 Starting Apple Sign-In process...');
+
+      // Request Apple credentials
+      debugPrint('🔵 Requesting Apple Sign-In credential...');
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'com.vynco.app.service',
+          redirectUri: Uri.parse('https://linklly-9525b.firebaseapp.com/__/auth/handler'),
+        ),
+      );
+
+      if (appleCredential == null) {
+        debugPrint('⚠️ Apple sign-in was cancelled by user');
+        return null;
+      }
+
+      debugPrint('✅ Apple account selected: ${appleCredential.email}');
+
+      // Check if we have the required credential
+      if (appleCredential.identityToken == null) {
+        debugPrint('❌ Missing identity token from Apple');
+        throw Exception('Failed to get identity token from Apple. Please try again.');
+      }
+
+      debugPrint('✅ Identity token obtained from Apple');
+
+      // Create a new credential
+      debugPrint('🔵 Creating Firebase credential from Apple...');
+      final credential = OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+      );
+
+      // Sign in to Firebase with the Apple credential
+      debugPrint('🔵 Signing in to Firebase with Apple credential...');
+      final userCredential = await _auth!.signInWithCredential(credential);
+
+      if (userCredential.user == null) {
+        debugPrint('❌ Firebase sign-in succeeded but user is null');
+        throw Exception('Authentication succeeded but user data is missing. Please try again.');
+      }
+
+      debugPrint('✅ Firebase authentication successful for: ${userCredential.user?.email}');
+
+      // Create or update user document in Firestore
+      debugPrint('🔵 Updating user document in Firestore...');
+      final userDocRef = _firestore!.collection('users').doc(userCredential.user!.uid);
+      final userDoc = await userDocRef.get();
+
+      // Determine the display name from Apple credential or Firebase user
+      String displayName = 'Apple User';
+      if (appleCredential.givenName != null || appleCredential.familyName != null) {
+        displayName = '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'.trim();
+      } else if (userCredential.user?.displayName != null) {
+        displayName = userCredential.user!.displayName!;
+      }
+
+      // Only update if document doesn't exist or doesn't have username
+      if (!userDoc.exists || userDoc.data()?['username'] == null || (userDoc.data()?['username'] as String).isEmpty) {
+        await userDocRef.set({
+          'uid': userCredential.user!.uid,
+          'email': userCredential.user!.email ?? appleCredential.email ?? '',
+          'fullName': displayName,
+          'profileImageUrl': userCredential.user!.photoURL,
+          'phoneNumberPrivacy': 'connections_only', // Default privacy setting
+          'allowedPhoneViewers': [], // Empty list by default
+          'socialLinks': {},
+          'createdAt': FieldValue.serverTimestamp(),
+          'lastSeen': FieldValue.serverTimestamp(),
+          'isOnline': true,
+        }, SetOptions(merge: true));
+        debugPrint('✅ User document created/updated in Firestore');
+      } else {
+        // Update only non-username fields if username already exists
+        await userDocRef.update({
+          'email': userCredential.user!.email ?? appleCredential.email ?? '',
+          'fullName': displayName,
+          'profileImageUrl': userCredential.user!.photoURL,
+          'lastSeen': FieldValue.serverTimestamp(),
+          'isOnline': true,
+        });
+        debugPrint('✅ User document updated in Firestore');
+      }
+
+      // Reload user model to check username status
+      debugPrint('🔵 Reloading user model...');
+      await _loadUserModel();
+
+      debugPrint('✅ Apple sign in successful for: ${userCredential.user?.email}');
+      return userCredential;
+    } catch (e, stackTrace) {
+      debugPrint('❌ Apple sign in error: $e');
+      debugPrint('❌ Error type: ${e.runtimeType}');
+      debugPrint('❌ Stack trace: $stackTrace');
+
+      // Provide more specific error messages based on error type
+      final errorString = e.toString().toLowerCase();
+      final errorMessage = e.toString();
+
+      // Check for specific error codes
+      if (errorString.contains('sign_in_failed') || errorString.contains('sign_in_canceled')) {
+        debugPrint('❌ Apple Sign-In failed');
+        throw Exception('Apple sign-in failed. Please try again.');
+      } else if (errorString.contains('network') || errorString.contains('connection')) {
+        debugPrint('❌ Network error during Apple Sign-In');
+        throw Exception('Network error. Please check your internet connection and try again.');
+      } else if (errorString.contains('credential') || errorString.contains('invalid')) {
+        debugPrint('❌ Invalid credential error');
+        throw Exception('Authentication failed. Please try signing in again.');
+      } else {
+        // Preserve original error for debugging but provide user-friendly message
+        debugPrint('❌ Unexpected error: $e');
+        // Extract the actual error message if it's wrapped
+        if (errorMessage.contains('Exception: ')) {
+          final actualError = errorMessage.split('Exception: ').last.trim();
+          throw Exception(actualError);
+        }
+        rethrow;
+      }
+    } finally {
+      _setLoading(false);
+      debugPrint('🔵 Apple Sign-In process completed');
     }
   }
 

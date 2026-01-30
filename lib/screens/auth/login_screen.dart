@@ -147,6 +147,35 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _signInWithApple() async {
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      await authService.signInWithApple();
+      
+      if (mounted) {
+        context.go('/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        // Check if user cancelled
+        if (e.toString().toLowerCase().contains('canceled') || 
+            e.toString().toLowerCase().contains('cancelled') ||
+            e.toString().toLowerCase().contains('user closed')) {
+          // Silently handle user cancellation
+          return;
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sign in failed. Please try again.'),
+            backgroundColor: AppColors.error,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -630,6 +659,34 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   label: Text(
                     'Continue with Google',
+                    style: TextStyle(
+                      color: AppColors.grey600,
+                      fontSize: ResponsiveUtils.getFontSize(context, baseSize: 16),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: ResponsiveUtils.getSymmetricPadding(context, horizontal: 0, vertical: 16),
+                    side: const BorderSide(color: AppColors.grey300),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 8)),
+                    ),
+                    backgroundColor: AppColors.white,
+                  ),
+                ),
+                
+                SizedBox(height: ResponsiveUtils.getSpacing(context, small: 16, medium: 18, large: 20)),
+                
+                // Apple sign in button
+                OutlinedButton.icon(
+                  onPressed: _signInWithApple,
+                  icon: Icon(
+                    Icons.apple,
+                    size: ResponsiveUtils.getIconSize(context, baseSize: 24),
+                    color: AppColors.grey600,
+                  ),
+                  label: Text(
+                    'Continue with Apple ID',
                     style: TextStyle(
                       color: AppColors.grey600,
                       fontSize: ResponsiveUtils.getFontSize(context, baseSize: 16),
