@@ -150,24 +150,42 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _signInWithApple() async {
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
-      await authService.signInWithApple();
+      final result = await authService.signInWithApple();
+      
+      // If result is null, user cancelled
+      if (result == null) {
+        return;
+      }
       
       if (mounted) {
         context.go('/home');
       }
     } catch (e) {
+      debugPrint('🔴 Apple Sign-In Error: $e');
       if (mounted) {
         // Check if user cancelled
-        if (e.toString().toLowerCase().contains('canceled') || 
-            e.toString().toLowerCase().contains('cancelled') ||
-            e.toString().toLowerCase().contains('user closed')) {
+        final errorMsg = e.toString().toLowerCase();
+        if (errorMsg.contains('canceled') || 
+            errorMsg.contains('cancelled') ||
+            errorMsg.contains('user closed') ||
+            errorMsg.contains('sign in aborted')) {
           // Silently handle user cancellation
           return;
         }
         
+        // Show specific error message
+        String displayError = 'Sign in failed. Please try again.';
+        if (errorMsg.contains('firebase')) {
+          displayError = 'Firebase configuration error. Please check your internet connection.';
+        } else if (errorMsg.contains('identity token')) {
+          displayError = 'Apple authentication failed. Please try again.';
+        } else if (errorMsg.contains('not available')) {
+          displayError = 'Apple Sign-In is not available on this device.';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sign in failed. Please try again.'),
+            content: Text(displayError),
             backgroundColor: AppColors.error,
             duration: Duration(seconds: 3),
           ),

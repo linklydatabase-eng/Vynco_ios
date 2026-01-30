@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../constants/app_colors.dart';
 import '../../services/auth_service.dart';
 import '../../services/post_service.dart';
@@ -1207,63 +1208,86 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                     ],
                   ),
                 ),
-                // Only show menu for user's own posts
-                if (isOwnPost)
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.grey800.withOpacity(0.6),
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 12)),
-                      border: Border.all(
-                        color: AppColors.grey400.withOpacity(0.2),
-                      ),
-                    ),
-                    child: PopupMenuButton<String>(
-                      icon: Icon(
-                        Icons.more_vert, 
-                        color: AppColors.grey300, 
-                        size: ResponsiveUtils.getIconSize(context, baseSize: 20),
-                      ),
-                      color: AppColors.surfaceDark,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onSelected: (value) {
-                        if (value == 'delete') {
-                          _deletePost(post, index);
-                        } else if (value == 'edit') {
-                          _editPost(post, index);
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem<String>(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.edit_outlined, color: AppColors.textPrimary, size: 20),
-                              const SizedBox(width: 12),
-                              const Text(
-                                'Edit caption',
-                                style: TextStyle(color: AppColors.textPrimary),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
-                              const SizedBox(width: 12),
-                              const Text(
-                                'Delete post',
-                                style: TextStyle(color: AppColors.error),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                // Menu for all posts - report for others' posts, edit/delete for own
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.grey800.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.getBorderRadius(context, base: 12)),
+                    border: Border.all(
+                      color: AppColors.grey400.withOpacity(0.2),
                     ),
                   ),
+                  child: PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.more_vert, 
+                      color: AppColors.grey300, 
+                      size: ResponsiveUtils.getIconSize(context, baseSize: 20),
+                    ),
+                    color: AppColors.surfaceDark,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        _deletePost(post, index);
+                      } else if (value == 'edit') {
+                        _editPost(post, index);
+                      } else if (value == 'report') {
+                        _showReportPostDialog(post);
+                      }
+                    },
+                    itemBuilder: (context) {
+                      if (isOwnPost) {
+                        // Menu for own posts
+                        return [
+                          PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.edit_outlined, color: AppColors.textPrimary, size: 20),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Edit caption',
+                                  style: TextStyle(color: AppColors.textPrimary),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Delete post',
+                                  style: TextStyle(color: AppColors.error),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ];
+                      } else {
+                        // Menu for others' posts
+                        return [
+                          PopupMenuItem<String>(
+                            value: 'report',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.flag_outlined, color: Colors.orange, size: 20),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Report post',
+                                  style: TextStyle(color: Colors.orange),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ];
+                      }
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -1957,6 +1981,201 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
         ],
       ),
     );
+  }
+
+  // Report post dialog
+  void _showReportPostDialog(PostModel post) {
+    final reportController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.grey900.withOpacity(0.95),
+                AppColors.grey800.withOpacity(0.95),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.grey400.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.flag_outlined,
+                      color: Colors.orange,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Report Post',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Help us understand why this post violates our guidelines',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.grey300,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Description',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.grey800.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.grey400.withOpacity(0.2),
+                    ),
+                  ),
+                  child: TextField(
+                    controller: reportController,
+                    maxLines: 4,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Tell us why you\'re reporting this post...',
+                      hintStyle: TextStyle(
+                        color: AppColors.grey400.withOpacity(0.6),
+                      ),
+                      contentPadding: const EdgeInsets.all(12),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: AppColors.grey300,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.secondary, AppColors.accent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: TextButton(
+                        onPressed: () {
+                          if (reportController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter a reason for reporting'),
+                                backgroundColor: AppColors.error,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+                          _submitPostReport(post, reportController.text.trim());
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'Report',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Submit post report to Firestore
+  Future<void> _submitPostReport(PostModel post, String reportText) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      await FirebaseFirestore.instance.collection('post_reports').add({
+        'reportedBy': user.uid,
+        'reporterEmail': user.email,
+        'postId': post.id,
+        'postAuthor': post.userName,
+        'postContent': post.content,
+        'reportText': reportText,
+        'timestamp': DateTime.now(),
+        'status': 'pending',
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Post reported successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error reporting post: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   // Navigate to profile edit

@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crypto/crypto.dart';
 import '../models/user_model.dart';
 import '../constants/digital_card_themes.dart';
 
@@ -711,14 +715,25 @@ class AuthService extends ChangeNotifier {
       _setLoading(true);
       debugPrint('🔵 Starting Apple Sign-In process...');
 
-      // Request Apple credentials
+      // Request Apple credentials (native on iOS, web flow on Android/Web)
       debugPrint('🔵 Requesting Apple Sign-In credential...');
+      final rawNonce = _generateNonce();
+      final hashedNonce = _sha256ofString(rawNonce);
+      final isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+      final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
       final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [],
-        webAuthenticationOptions: WebAuthenticationOptions(
-          clientId: 'com.vynco.app.service',
-          redirectUri: Uri.parse('https://linklly-9525b.firebaseapp.com/__/auth/handler'),
-        ),
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+        webAuthenticationOptions: (kIsWeb || isAndroid)
+            ? WebAuthenticationOptions(
+                clientId: 'com.vynco.app.service',
+                redirectUri: Uri.parse('https://linklly-9525b.firebaseapp.com/__/auth/handler'),
+              )
+            : null,
       );
 
       if (appleCredential == null) {
@@ -740,6 +755,7 @@ class AuthService extends ChangeNotifier {
       debugPrint('🔵 Creating Firebase credential from Apple...');
       final credential = OAuthProvider('apple.com').credential(
         idToken: appleCredential.identityToken,
+        rawNonce: rawNonce,
       );
 
       // Sign in to Firebase with the Apple credential
@@ -832,6 +848,21 @@ class AuthService extends ChangeNotifier {
       _setLoading(false);
       debugPrint('🔵 Apple Sign-In process completed');
     }
+  }
+
+  String _generateNonce([int length = 32]) {
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List<String>.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
+  }
+
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   Future<void> signOut() async {
