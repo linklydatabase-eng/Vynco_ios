@@ -244,6 +244,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Future<void> _signUpWithApple() async {
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      await authService.signInWithApple();
+      
+      if (mounted) {
+        context.go('/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        // Check if user cancelled
+        if (e.toString().toLowerCase().contains('canceled') || 
+            e.toString().toLowerCase().contains('cancelled') ||
+            e.toString().toLowerCase().contains('user closed')) {
+          // Silently handle user cancellation
+          return;
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sign up failed. Please try again.'),
+            backgroundColor: AppColors.error,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -403,6 +432,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     icon: const Icon(Icons.g_mobiledata, size: 20, color: AppColors.textPrimary),
                                     label: const Text(
                                       'Continue with Google',
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: -0.2,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      backgroundColor: Colors.white.withOpacity(0.1),
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 12),
+
+                                  OutlinedButton.icon(
+                                    onPressed: _signUpWithApple,
+                                    icon: const Icon(Icons.apple, size: 20, color: AppColors.textPrimary),
+                                    label: const Text(
+                                      'Continue with Apple',
                                       style: TextStyle(
                                         color: AppColors.textPrimary,
                                         fontSize: 15,
